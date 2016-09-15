@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="http://cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
+    <script src="http://cdn.bootcss.com/raphael/1.5.2/raphael-min.js"></script>
+    <script>
+
+
+        function demo() {
+            var paper = Raphael(50, 50, 320, 200);
+
+            var x = 20
+            var y = 50
+            var string_spacing = 20
+            var fret_spacing = 25
+            var fret_count = 5
+            var string_count = 6
+            var chord_name = "C"
+            var tuning = ["E", "A", "D", "G", "B", "E"];
+            var left_fingering = [-1, 3, 2, 0, 1, 0]
+
+            // Draw strings
+            for (var i = 0; i < string_count; ++i) {
+                paper.path("M" + (x + string_spacing * i) + " " + y + "L" + (x + string_spacing * i) + " " + (y + fret_spacing * fret_count - fret_spacing / 2))
+            }
+
+            // Draw frets
+            for (var i = 0; i < fret_count; ++i) {
+                paper.path("M" + x + " " + (y + fret_spacing * i) + "L" + (x + string_spacing * (string_count - 1)) + " " + (y + fret_spacing * i))
+            }
+
+            // Draw tuning keys
+            for (var i = 0; i < string_count; ++i) {
+                var t = paper.text(x + string_spacing * i, y + fret_count * fret_spacing, tuning[i]);
+            }
+
+            // Draw chord name
+            var t = paper.text(x + string_spacing * (string_count - 1) / 2, y - fret_spacing, chord_name)
+            t.attr("font-size", 20)
+
+            // Draw finger
+            for (var i = 0; i < left_fingering.length; i++) {
+                var p = left_fingering[i]
+                if (p == -1) {
+                    paper.text(x + string_spacing * i, y - fret_spacing / 4, "x")
+                }
+                if (p == 0) {
+                    paper.text(x + string_spacing * i, y - fret_spacing / 4, "o")
+                }
+                if (p > 0) {
+                    paper.circle(x + string_spacing * i, y + fret_spacing * p - fret_spacing / 2, string_spacing / 3).attr("fill", "black")
+                }
+            }
+        }
+        $(function () {
+            demo()
+        });
+    </script>
+    <title></title>
+</head>
+<body>
+
+</body>
+</html>
