@@ -24,7 +24,13 @@
                     var s = note[j][0] // string
                     var f = note[j][1] // fret
                     var d = note[j][2] // duration
-                    paper.text(note_x_start + note_x_spacing * i, note_y_start + tab_y_spacing * (s-1), f).attr("font-size", note_font_size)
+                    var x = note_x_start + note_x_spacing * i
+                    if (f == '⟿') {
+                        paper.text(x, note_y_start + tab_y_spacing * (s-2.5), f).attr("font-size", note_font_size*2.5).rotate(-90)
+                    } else {
+                        paper.text(x, note_y_start + tab_y_spacing * (s-1), f).attr("font-size", note_font_size)
+                    }
+
 
                     // Draw Duration line
                     total_duration += d/note.length
@@ -72,7 +78,7 @@
                     [[6, 'X', 0.125]],
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[1, 'X', 0.125], [2, 'X', 0.125]],
+                    [[1, 'X', 0.125], [2, 'X', 0.125]], // 延音
                     [[1, 'X', 0.125], [2, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.25]]
@@ -259,11 +265,11 @@
                     [[1, 'X', 0.125]],
                     [[2, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[4, 'X', 0.125]],    // 琶音
+                    [[4, '⟿', 0.125]],    // 向下琶音
                 ],
 
                 [
-                    [[4, 'X', 0.25]],    // 琶音, 后面是3个延音
+                    [[4, '⟿', 0.25]],    // 琶音, 后面是3个延音
                 ],
 
             ]
