@@ -5,12 +5,21 @@
     <script src="http://cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
     <script src="http://cdn.bootcss.com/raphael/1.5.2/raphael-min.js"></script>
     <script>
+
+        var tab_x_width = 900
+        var bars_num_oneline = 5
+
+
         // Add a simple line method to Raphael.
         function verLine(p, x, y, new_y) {
             return p.path("M" + x + " " + y + "V" + new_y);
         }
         function horLine(p, x, y, new_x) {
             return p.path("M" + x + " " + y + "H" + new_x);
+        }
+
+        function arcLine(p, x, y, mid_x, mid_y, end_x, end_y) {
+            return p.path("M" + x + " " + y + "S" + " " + mid_x + " " + mid_y + " " + end_x + " " + end_y)
         }
 
         function draw_bars(paper, notes, note_x_start, note_y_start, tab_y_spacing, note_x_spacing) {
@@ -25,10 +34,27 @@
                     var f = note[j][1] // fret
                     var d = note[j][2] // duration
                     var x = note_x_start + note_x_spacing * i
+                    var y = note_y_start + tab_y_spacing * (s-1)
+
+                    // 延音/滑音/点弦/勾弦 线条有待改进
+                    // 最后一个音需要横跨小节线, 是小节内长度的2倍
+                    if (s == '0') {
+                        arcLine(paper,
+                                x,
+                                y + tab_y_spacing * 0.5,
+                                x + note_x_spacing * 0.5 * (1 + Math.floor(i/(notes.length - 1))),
+                                y - tab_y_spacing * 0.5,
+                                x + note_x_spacing * (1 + Math.floor(i/(notes.length - 1))),
+                                y + tab_y_spacing * 0.5
+                        ).attr("stroke-width", 1.2)
+                        paper.text(x + note_x_spacing * 0.5, y - tab_y_spacing, f).attr("font-size", note_font_size * 1.5)
+                        continue
+                    }
+
                     if (f == '⟿') {
-                        paper.text(x, note_y_start + tab_y_spacing * (s-2.5), f).attr("font-size", note_font_size*2.5).rotate(-90)
+                        paper.text(x, y - tab_y_spacing * 1.5, f).attr("font-size", note_font_size * 2.5).rotate(-90)
                     } else {
-                        paper.text(x, note_y_start + tab_y_spacing * (s-1), f).attr("font-size", note_font_size)
+                        paper.text(x, y, f).attr("font-size", note_font_size)
                     }
 
 
@@ -40,45 +66,155 @@
                     var duration_x_end = note_x_start + note_x_spacing * (i + 0.5 - i%2)
                     switch (d) {
                         case 0:
+                            //休止符
                             break
                         case 0.125:
+                            // 八分音符
                             verLine(paper, duration_x_start, duration_y_start, duration_y_end)
                             horLine(paper, duration_x_start, duration_y_end, duration_x_end).attr("stroke-width", 2)
-                        case 0.25:
-                            verLine(paper, duration_x_start, duration_y_start, duration_y_end)
-                        case 0.5:
                             break
+                        case 0.25:
+                            // 四分音符
+                            verLine(paper, duration_x_start, duration_y_start, duration_y_end)
+                            break
+                        case 0.5:
+                            // 二分音符
+                            verLine(paper, duration_x_start, duration_y_start, duration_y_end)
+                            var gap = Math.floor(tab_x_width / bars_num_oneline / 5)
+                            paper.text(x + gap, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
                         case 1:
+                            // 全音符
+                            verLine(paper, duration_x_start, duration_y_start, duration_y_end)
+                            var gap = Math.floor(tab_x_width / bars_num_oneline / 5)
+                            paper.text(x + gap, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
+                            paper.text(x + gap * 2, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
+                            paper.text(x + gap * 3, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
                             break
                     }
                 }
             }
         }
 
+        var chords = {
+            "C": {"positions": "x32010", "fingers": "-32-1-"},
+            "D": {"positions": "xx0232", "fingers": "---132"},
+            "D7": {"positions": "xx0212", "fingers": "---213"},
+            "A": {"positions": "x02220", "fingers": "--123-"},
+            "Gmaj7/d": {"positions": "320002", "fingers": "32---1"},
+            "Gsus2": {"positions": "300233", "fingers": "2--134"},
+            "A7sus4": {"positions": "002233", "fingers": "--1123"},
+            "Csus2": {"positions": "035533", "fingers": "-13411"},
+            "#Cm": {"positions": "x46654", "fingers": "-13421"},
+            "Em7": {"positions": "002433", "fingers": "--1423"},
+            "Em7(7)": {"positions": "x79787", "fingers": "-13121"}
+        }
+
+        function draw_chords(p, x, y, name) {
+            // Draw strings
+            var string_spacing = 10
+            var fret_spacing = 14
+            var fret_count = 5
+            var name_size = 15
+            for (var i = 0; i < 6; ++i) {
+                verLine(p, (x + string_spacing * i), y, (y + fret_spacing * fret_count - fret_spacing / 2))
+            }
+
+            // Draw frets
+            for (var i = 0; i < fret_count; ++i) {
+                horLine(p, x, y + fret_spacing * i, x + string_spacing * 5)
+            }
+
+            // Draw tuning keys
+//            var tuning = ["E", "A", "D", "G", "B", "E"];
+//            for (var i = 0; i < 6; ++i) {
+//                var t = p.text(x + string_spacing * i, y + fret_count * fret_spacing, tuning[i]);
+//            }
+
+            // Draw chord name
+            var t = p.text(x + string_spacing * 2.5, y - fret_spacing, name).attr("font-size", name_size)
+
+            if (!chords[name]) {
+                return
+            }
+            // Draw min_fret
+            var max = 0
+            for (var i=0; i < 6; i++) {
+                var fret = Math.floor(chords[name]["positions"][i])
+                if (fret > max) {
+                    max = fret
+                }
+            }
+            var min = max
+            for (var i = 0; i < 6; i++) {
+                var fret = Math.floor(chords[name]["positions"][i])
+                if (fret !=0 && fret < min) {
+                    min = fret
+                }
+            }
+            var capo = 1
+            if (max < 5) {
+                capo = 1
+            } else if (max >= 5) {
+                capo = min
+            }
+            if (capo != 1) {
+                p.text(x - string_spacing * 0.5, y + fret_spacing * 0.5, capo)
+            }
+
+            // Draw finger
+            for (var i = 0; i < 6; i++) {
+                var position = chords[name]["positions"][i]
+                var finger = chords[name]["fingers"][i]
+                if (position == 'x') {
+                    p.text(x + string_spacing * i, y - fret_spacing / 4, "x")
+                }
+                else if (position == '0') {
+                    p.text(x + string_spacing * i, y - fret_spacing / 4, "o")
+                }
+                else {
+                    var fret = Math.floor(position)
+                    p.circle(x + string_spacing * i, y + fret_spacing * (fret - capo + 1) - fret_spacing / 2, fret_spacing / 3).attr("fill", "black")
+                    p.text(x + string_spacing * i, y + fret_spacing * (fret - capo + 1) - fret_spacing / 2, finger).attr("fill", "white")
+                }
+            }
+        }
 
         function demo() {
-            var paper = Raphael(0, 0, 1000, 1000);
 
-            var string_spacing = 20
-            var fret_spacing = 25
-            var fret_count = 5
+            var paper = Raphael(0, 0, 1000, 3000)
             var strings_num = 6
-            var chord_name = "C"
-            var tuning = ["E", "A", "D", "G", "B", "E"];
-            var left_fingering = [-1, 3, 2, 0, 1, 0]
-            var chord_bars = 1 //bar
             var bar_width = 400
-            var bar_seq = 1
 
-
-
+            var bar_chords = [
+                [["Gsus2", 1]],
+                [["A7sus4", 1]],
+                [["Csus2", 1]],
+                [["D7", 1]],
+                [["Gsus2", 1]],
+                [["A7sus4", 1]],
+                [["Csus2", 1]],
+                [["Em7", 1]],
+                [["A7sus4", 1]],
+                [["D7", 1]],
+                [["Gmaj7/d", 1]],
+                [["Gmaj7/d", 1]],
+                [["Gsus2", 1]],
+                [["A7sus4", 1]],
+                [["Csus2", 1]],
+                [["Em7(7)", 1]],
+                [["A7sus4", 1]],
+                [["Csus2", 1]],
+                [["D7", 1]],
+                [["D7", 1]]
+            ]
             
             var bars = [
+                // 0 表示延音或者滑音或者点弦或者勾弦
                 [
                     [[6, 'X', 0.125]],
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[1, 'X', 0.125], [2, 'X', 0.125]], // 延音
+                    [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125], [2, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.25]]
@@ -88,7 +224,7 @@
                     [[5, 'X', 0.125]],
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[1, 'X', 0.125], [2, 'X', 0.125]],
+                    [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125], [2, 'X', 0.125]],
                     [[3, '2', 0.125]],
                     [[3, '5', 0.25]]
@@ -98,7 +234,7 @@
                     [[5, 'X', 0.125]],
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[1, 'X', 0.125], [2, 'X', 0.125]],
+                    [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125], [2, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.25]]
@@ -108,7 +244,7 @@
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.125]],
-                    [[1, 'X', 0.125]],
+                    [[1, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.25]]
@@ -118,7 +254,7 @@
                     [[6, 'X', 0.125]],
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[1, 'X', 0.125], [2, 'X', 0.125]],
+                    [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125], [2, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.25]]
@@ -128,7 +264,7 @@
                     [[5, 'X', 0.125]],
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[1, 'X', 0.125], [2, 'X', 0.125]],
+                    [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125], [2, 'X', 0.125]],
                     [[3, '2', 0.125]],
                     [[3, '5', 0.25]]
@@ -138,7 +274,7 @@
                     [[5, 'X', 0.125]],
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[1, 'X', 0.125], [2, 'X', 0.125]],
+                    [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125], [2, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.25]]
@@ -148,7 +284,7 @@
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.125]],
-                    [[1, 'X', 0.125]],
+                    [[1, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.25]]
@@ -158,7 +294,7 @@
                     [[5, 'X', 0.125]],
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[1, 'X', 0.125], [2, 'X', 0.125]],
+                    [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125], [2, 'X', 0.125]],
                     [[3, '2', 0.125]],
                     [[3, '5', 0.25]]
@@ -168,7 +304,7 @@
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.125]],
-                    [[1, 'X', 0.125]],
+                    [[1, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.25]]
@@ -178,20 +314,20 @@
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.125]],
-                    [[1, '2', 0.125]],
+                    [[1, '2', 0.125], [0, '', 0.125]],
                     [[1, '2', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.125]],
-                    [[1, '0', 0.125]]
+                    [[1, '0', 0.125], [0, '', 0.125]]
                 ],
 
                 [
                     [[1, '0', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.125]],
+                    [[2, '3', 0.125], [0, '', 0.125]],
                     [[2, '3', 0.125]],
-                    [[2, '3', 0.125]],
-                    [[3, '2', 0.125]],
+                    [[3, '2', 0.125],[0, 's', 0.125]],
                     [[3, '4', 0.125]],
                     [[2, '3', 0.125]]
                 ],
@@ -200,7 +336,7 @@
                     [[6, 'X', 0.125]],
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[1, 'X', 0.125], [2, 'X', 0.125]],
+                    [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125], [2, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.25]]
@@ -210,7 +346,7 @@
                     [[5, 'X', 0.125]],
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[1, 'X', 0.125], [2, 'X', 0.125]],
+                    [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125], [2, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[1, 'X', 0.25], [2, 'X', 0.25]]
@@ -220,7 +356,7 @@
                     [[5, 'X', 0.125]],
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[1, 'X', 0.125], [2, 'X', 0.125]],
+                    [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125], [2, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.25]]
@@ -230,7 +366,7 @@
                     [[5, 'X', 0.125]],
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[1, 'X', 0.125], [2, 'X', 0.125]],
+                    [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125], [2, 'X', 0.125]],
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.25]]
@@ -240,7 +376,7 @@
                     [[5, 'X', 0.125]],
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[2, 'X', 0.125]],
+                    [[2, 'X', 0.125], [0, '', 0.125]],
                     [[2, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[1, 'X', 0.125]],
@@ -251,7 +387,7 @@
                     [[5, 'X', 0.125]],
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[1, 'X', 0.125], [2, 'X', 0.125]],
+                    [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125], [2, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.25]]
@@ -261,26 +397,26 @@
                     [[4, 'X', 0.125]],
                     [[3, 'X', 0.125]],
                     [[2, 'X', 0.125]],
-                    [[1, 'X', 0.125]],
+                    [[1, 'X', 0.125], [0, '', 0.125]],
                     [[1, 'X', 0.125]],
                     [[2, 'X', 0.125]],
                     [[3, 'X', 0.125]],
-                    [[4, '⟿', 0.125]],    // 向下琶音
+                    [[4, '⟿', 0.125], [0, '', 0.125]],    // 向下琶音
                 ],
 
                 [
-                    [[4, '⟿', 0.25]],    // 琶音, 后面是3个延音
+                    [[4, '⟿', 1]],    // 琶音
                 ],
 
             ]
             // Draw tab line
             var tab_x_start = 100
-            var tab_y_start = 100
-            var tab_x_width = 900
+            var tab_y_start = 400
+
             var tab_y_spacing = 10    // for six string in one line tab
             var note_x_spacing = 20
-            var tab_y_width = 200     // for two tab gap
-            var bars_num_oneline = 5
+            var tab_y_width = 360     // for two tab gap
+
             for (var i = 0;i <= Math.floor(bars.length/bars_num_oneline); i++) {
                 var x = tab_x_start
                 var y = tab_y_start + tab_y_width * i
@@ -296,7 +432,6 @@
 
             for (var i=0; i<bars.length; i++) {
                 // Draw bar line
-
                 var bar_x_start = tab_x_start + Math.floor(tab_x_width / bars_num_oneline) * (i % bars_num_oneline)
                 var bar_y_start = tab_y_start + tab_y_width * Math.floor(i / bars_num_oneline)
                 var note_x_start = bar_x_start + note_x_spacing
@@ -306,6 +441,19 @@
                 // 每个小节的音符
                 draw_bars(paper, bars[i], note_x_start, note_y_start, tab_y_spacing, note_x_spacing)
 
+            }
+
+            // 和弦
+            for (var i=0; i<bar_chords.length; i++) {
+                var bar_x_start = tab_x_start + Math.floor(tab_x_width / bars_num_oneline) * (i % bars_num_oneline)
+                var bar_y_start = tab_y_start + tab_y_width * Math.floor(i / bars_num_oneline)
+                var chord_y_start = bar_y_start - tab_y_width / 5
+                for (var j = 0; j < bar_chords[i].length; j++) {
+                    var chord_x_start = bar_x_start + bar_width * (bar_chords[i][j][1] - 1)
+
+                    // 每个小节的和弦
+                    draw_chords(paper, chord_x_start, chord_y_start, bar_chords[i][j][0])
+                }
             }
         }
         $(function () {
