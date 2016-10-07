@@ -109,6 +109,75 @@
             "Em7(7)": {"positions": "x79787", "fingers": "-13121"}
         }
 
+        // 简谱旋律, m[0] 1234567, m[1] 音高 m[3] 时值 m[4] 装饰音,滑音
+        var melodies = [
+            [
+                [0, 0, 0.25],
+                [0, 0, 0.25],
+                [0, 0, 0.25],
+                [0, 0, 0.25],
+            ],
+            [
+                [0, 0, 0.25],
+                [0, 0, 0.25],
+                [0, 0, 0.25],
+                [0, 0, 0.25],
+            ],
+            [
+                [0, 0, 0.25],
+                [0, 0, 0.25],
+                [0, 0, 0.25],
+                [0, 0, 0.25],
+            ],
+            [
+                [0, 0, 0.25],
+                [0, 0, 0.25],
+                [0, 0, 0.25],
+                [0, 0, 0.25],
+            ],
+            [
+                [0, 0, 0.125],
+                [5, -8, 0.125],
+                [6, -8, 0.125],
+                [1, 0, 0.125],
+                [1, 0, 0.125],
+                [6, -8, 0.125],
+                [1, 0, 0.125],
+                [2, 0, 0.125],
+            ],
+        ]
+
+        function draw_melody(p, x, y, melody) {
+            var note_x_spacing = 20
+            var tab_y_spacing = 10
+
+            for (var i = 0; i < melody.length; i++) {
+                var d = melody[i][2]
+                var _x = x + note_x_spacing * i * d/0.125
+                p.text(_x, y, melody[i][0])
+                switch (d) {
+                    case 0:
+                        //休止符
+                        break
+                    case 0.125:
+                        // 八分音符
+                        horLine(p,
+                                _x - note_x_spacing * 0.2,
+                                y + tab_y_spacing,
+                                x + note_x_spacing * (i + 0.5 - i%2) + note_x_spacing * 0.8
+                        )
+                        break
+                    case 0.25:
+                        // 四分音符
+                        break
+                    case 0.5:
+                    case 1:
+                        break
+                }
+
+            }
+        }
+
         function draw_chords(p, x, y, name) {
             // Draw strings
             var string_spacing = 10
@@ -454,6 +523,21 @@
                     // 每个小节的和弦
                     draw_chords(paper, chord_x_start, chord_y_start, bar_chords[i][j][0])
                 }
+            }
+
+            // 旋律
+            for (var i=0; i<melodies.length; i++) {
+
+                var bar_x_start = tab_x_start + Math.floor(tab_x_width / bars_num_oneline) * (i % bars_num_oneline)
+                var bar_y_start = tab_y_start + tab_y_width * Math.floor(i / bars_num_oneline) + tab_y_width * 0.25
+                var bar_y_end = bar_y_start + tab_y_spacing * 3
+                var melody_x_start = bar_x_start + note_x_spacing
+                var melody_y_start = bar_y_end - tab_y_spacing
+                // 每个小节的小节线
+                verLine(paper, bar_x_start, bar_y_start, bar_y_end)
+
+                draw_melody(paper, melody_x_start, melody_y_start, melodies[i])
+
             }
         }
         $(function () {
