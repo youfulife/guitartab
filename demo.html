@@ -187,6 +187,10 @@
 
         ]
 
+        function isString(str){
+            return (typeof str=='string') && str.constructor==String;
+        }
+
         function draw_melody(p, x, y, melody) {
             var note_x_spacing = 20
             var tab_y_spacing = 10
@@ -200,6 +204,11 @@
                 var d = melody[i][2] // 时值
                 var grace = melody[i][3] //装饰音
 
+                var t = p.text(x, y, note).attr("font-weight", "bold").attr("font-size", font_size)
+                if (isString(note) && grace) {
+                    t.attr("text-anchor", "start")
+                }
+
                 switch (grace) {
                     case undefined:
                         break
@@ -207,9 +216,11 @@
                         arcLine(p,
                                 x,
                                 y - tab_y_spacing * 2,
-                                x + note_x_spacing * 0.5 * (1 + Math.floor(i / (melody.length - 1))),
+                                //x + note_x_spacing * 0.5 * (1 + Math.floor(i / (melody.length - 1))),
+                                x + gap * d / (1 / 32) / 2 * (1 + Math.floor(i / (melody.length - 1))),
                                 y - tab_y_spacing * 3,
-                                x + note_x_spacing * (1 + Math.floor(i / (melody.length - 1))),
+                                //x + note_x_spacing * (1 + Math.floor(i / (melody.length - 1))),
+                                x + gap * d / (1 / 32) * (1 + Math.floor(i / (melody.length - 1))),
                                 y - tab_y_spacing * 2
                         ).attr("stroke-width", 1.2)
                         break
@@ -218,13 +229,13 @@
                         p.text(x - gap, y - tab_y_spacing * 0.8, "⍑").attr("font-size", font_size)
                 }
 
-                p.text(x, y, note).attr("font-weight", "bold").attr("font-size", font_size).attr("text-anchor", "start")
+
 
                 switch (pitch) {
                     case 0:
                         break
                     case -8:
-                        p.text(x + 1, y + tab_y_spacing * 1.3, '•').attr("font-size", font_size).attr("text-anchor", "start")
+                        p.text(x + 1, y + tab_y_spacing * 1.3, '•').attr("font-size", font_size)
 
                 }
                 switch (d) {
@@ -233,16 +244,16 @@
                         break
                     case 0.0625:
                         // 十六分音符
-                        p.text(x, y, '_').attr("font-weight", "bold").attr("font-size", font_size).attr("text-anchor", "start")
-                        p.text(x, y+tab_y_spacing*0.3, '_').attr("font-weight", "bold").attr("font-size", font_size).attr("text-anchor", "start")
+                        p.text(x, y, '_').attr("font-weight", "bold").attr("font-size", font_size)
+                        p.text(x, y+tab_y_spacing*0.3, '_').attr("font-weight", "bold").attr("font-size", font_size)
                         break
                     case 0.125:
                         // 八分音符
-                        p.text(x, y, '_').attr("font-weight", "bold").attr("font-size", font_size).attr("text-anchor", "start")
+                        p.text(x, y, '_').attr("font-weight", "bold").attr("font-size", font_size)
                         break
                     case 0.1875:
                         // 附点八分音符
-                        p.text(x, y, '_').attr("font-weight", "bold").attr("font-size", font_size).attr("text-anchor", "start")
+                        p.text(x, y, '_').attr("font-weight", "bold").attr("font-size", font_size)
                     case 0.25:
                         // 四分音符
                         break
