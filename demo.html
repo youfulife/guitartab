@@ -252,10 +252,23 @@
 
         ]
 
+        var lyrics = [
+            "给你一张过去的CD",
+            "听听那时我们的爱情",
+            "有时会突然忘了",
+            "我还在爱着你",
+            "再唱不出那样的歌曲",
+            "听到都会红着脸躲避",
+            "虽然会经常忘了",
+            "我依然爱着你",
+        ].join('')
+
         function isString(str) {
             return (typeof str == 'string') && str.constructor == String;
         }
 
+        var lyric_offset = 0
+        var slur_flag = 0
         function draw_melody(p, x, y, melody) {
             var note_x_spacing = 20
             var tab_y_spacing = 10
@@ -270,8 +283,17 @@
                 var grace = melody[i][3] //装饰音
 
                 var t = p.text(x, y, note).attr("font-weight", "bold").attr("font-size", font_size)
-                if (isString(note) && grace) {
+                if (note != 0 && slur_flag == 0) {
+                    p.text(x, y + tab_y_spacing * 4, lyrics[lyric_offset]).attr("font-weight", "bold").attr("font-size", font_size)
+                    lyric_offset += 1
+                }
+                if (isString(note) && (grace || pitch < 0)) {
                     t.attr("text-anchor", "start")
+                }
+                if(grace == 's') {
+                    slur_flag = 1
+                } else if (slur_flag == 1) {
+                    slur_flag = 0
                 }
 
                 switch (grace) {
@@ -282,7 +304,7 @@
                                 x,
                                 y - tab_y_spacing * 2,
                                 //x + note_x_spacing * 0.5 * (1 + Math.floor(i / (melody.length - 1))),
-                                x + 1/2 * (gap * d / (1 / 32) + note_x_spacing * Math.floor(i / (melody.length - 1))),
+                                x + 1 / 2 * (gap * d / (1 / 32) + note_x_spacing * Math.floor(i / (melody.length - 1))),
                                 y - tab_y_spacing * 3,
                                 //x + note_x_spacing * (1 + Math.floor(i / (melody.length - 1))),
                                 x + gap * d / (1 / 32) + note_x_spacing * Math.floor(i / (melody.length - 1)),
@@ -299,7 +321,10 @@
                     case 0:
                         break
                     case -8:
-                        p.text(x + 1, y + tab_y_spacing * 1.3, '•').attr("font-size", font_size)
+                        t = p.text(x + 1, y + tab_y_spacing * 1.3, '•').attr("font-size", font_size)
+                        if (isString(note) && (grace || pitch < 0)) {
+                            t.attr("text-anchor", "start")
+                        }
 
                 }
                 switch (d) {
@@ -313,11 +338,17 @@
                         break
                     case 0.125:
                         // 八分音符
-                        p.text(x, y, '_').attr("font-weight", "bold").attr("font-size", font_size)
+                        t = p.text(x, y, '_').attr("font-weight", "bold").attr("font-size", font_size)
+                        if (isString(note) && (grace || pitch < 0)) {
+                            t.attr("text-anchor", "start")
+                        }
                         break
                     case 0.1875:
                         // 附点八分音符
-                        p.text(x, y, '_').attr("font-weight", "bold").attr("font-size", font_size)
+                        t = p.text(x, y, '_').attr("font-weight", "bold").attr("font-size", font_size)
+                        if (isString(note) && (grace || pitch < 0)) {
+                            t.attr("text-anchor", "start")
+                        }
                     case 0.25:
                         // 四分音符
                         break
