@@ -1,4 +1,5 @@
 <!DOCTYPE html>
++
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -31,8 +32,6 @@
 
         function draw_bars(paper, notes, note_x_start, note_y_start, tab_y_spacing, note_x_spacing) {
 
-            var note_font_size = 10
-            var total_duration = 0
             var strings_num = 6
             for (var i = 0; i < notes.length; i++) {
                 var note = notes[i]
@@ -42,28 +41,25 @@
                     var d = note[j][2] // duration
                     var x = note_x_start + note_x_spacing * i
                     var y = note_y_start + tab_y_spacing * (s - 1)
+//
+//                    // 延音/滑音/点弦/勾弦 线条有待改进
+//                    // 最后一个音需要横跨小节线, 是小节内长度的2倍
+//                    if (s == '0') {
+//                        arcLine(paper,
+//                                x,
+//                                y + tab_y_spacing * 0.5,
+//                                x + note_x_spacing * 0.5 * (1 + Math.floor(i / (notes.length - 1))),
+//                                y - tab_y_spacing * 0.5,
+//                                x + note_x_spacing * (1 + Math.floor(i / (notes.length - 1))),
+//                                y + tab_y_spacing * 0.5
+//                        ).attr("stroke-width", 1.2)
+//                        paper.text(x + note_x_spacing * 0.5, y - tab_y_spacing, f).attr("font-size", note_font_size * 1.5)
+//                        continue
+//                    }
 
-                    // 延音/滑音/点弦/勾弦 线条有待改进
-                    // 最后一个音需要横跨小节线, 是小节内长度的2倍
-                    if (s == '0') {
-                        arcLine(paper,
-                                x,
-                                y + tab_y_spacing * 0.5,
-                                x + note_x_spacing * 0.5 * (1 + Math.floor(i / (notes.length - 1))),
-                                y - tab_y_spacing * 0.5,
-                                x + note_x_spacing * (1 + Math.floor(i / (notes.length - 1))),
-                                y + tab_y_spacing * 0.5
-                        ).attr("stroke-width", 1.2)
-                        paper.text(x + note_x_spacing * 0.5, y - tab_y_spacing, f).attr("font-size", note_font_size * 1.5)
-                        continue
-                    }
+                    draw_grace_note(paper, x, y, note[j])
 
-                    if (f == '⟿') {
-                        paper.text(x, y - tab_y_spacing * 1.5, f).attr("font-size", note_font_size * 2.5).rotate(-90)
-                    } else {
-                        paper.text(x, y, f).attr("font-size", note_font_size)
-                    }
-
+                    draw_fret_note(paper, x, y, note[j])
 
                     // Draw Duration line
                     total_duration += d / note.length
@@ -447,17 +443,21 @@
         var tab_y_width = 360     // for two tab gap
         var tab_x0 = 100
         var tab_y0 = 200
+
+        var note_x_spacing = 20
+        var note_font_size = 10
+
+        var total_duration = 0
+
         var bars = [
             // 0 表示延音或者滑音或者点弦或者勾弦
-            [
-                [[6, 'X', 0.125]],
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.25]]
-            ],
+                [6, 'X', 0.125],
+                [4, 'X', 0.125],
+                [3, 'X', 0.125],
+                [12, 'X/X', 0.125, 's'],
+                [12, 'X/X', 0.125],
+                [3, 'X', 0.125],
+                [2, 'X', 0.25, 's']
 
             [
                 [[5, 'X', 0.125]],
@@ -649,6 +649,52 @@
 
         ]
 
+        function draw_fret_note(p, x, y, note) {
+            var f = note[1] // 几品 fret
+            if (f == '⟿') {
+                p.text(x, y, f).attr("font-size", note_font_size * 2).rotate(-90).attr("text-anchor", "start")
+            } else {
+                p.text(x, y, f).attr("font-size", note_font_size)
+            }
+        }
+
+        function isInteger(obj) {
+            return Math.floor(obj) === obj
+        }
+
+        function draw_grace_note(p, x, y, note) {
+            var grace = note[3] //装饰音
+            var duration = note[2] // 时值
+            // 延音/滑音/点弦/勾弦 线条有待改进
+            var gap = (tab_x_width / bars_num_oneline - note_x_spacing) / 32
+            switch (grace) {
+                case undefined:
+                    break
+                case 's':
+                    var x0 = x
+                    var x1 = x0 + 0.5 * gap * duration / (1 / 32)
+                    var x2 = x0 + gap * duration / (1 / 32)
+                    if (isInteger(total_duration)) {
+                        x1 += 0.5 * note_x_spacing
+                        x2 += note_x_spacing
+                    }
+                    var y0 = y - tab_y_spacing * 0.5
+                    var y1 = y0 - tab_y_spacing
+                    var y2 = y0
+                    arcLine(p, x0, y0, x1, y1, x2, y2).attr("stroke-width", 1.2)
+                    p.text(x1, y1 - tab_y_spacing, 's').attr("font-size", note_font_size * 1.5)
+                    break
+                default:
+                    break
+            }
+
+        }
+
+        function draw_bar_note(p, x, y, note) {
+            var gap = (tab_x_width / bars_num_oneline - note_x_spacing) / 32
+            x = x + note_x_spacing
+        }
+
         function draw_six_line(p, x, y) {
             for (var i = 0; i < 6; i++) {
                 horLine(p, x, y + tab_y_spacing * i, x + tab_x_width)
@@ -701,7 +747,6 @@
 
             init_tab(paper)
 
-            var note_x_spacing = 20
 
             for (var i = 0; i < bars.length; i++) {
                 // Draw bar line
