@@ -1,22 +1,12 @@
 <!DOCTYPE html>
-+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <script src="http://cdn.bootcss.com/jquery/2.1.4/jquery.min.js"></script>
-    <script src="raphael.js"></script>
-    <script src="underscore.js"></script>
-    <style>@media print {
-        body {
-            display: none
-        }
-    }</style>
+    <!--<script src="underscore.js"></script>-->
+    <script src="http://cdn.bootcss.com/raphael/1.5.2/raphael-min.js"></script>
+    <script src="chord.js"></script>
     <script>
-
-
-        var tab_x_width = 900
-        var bars_num_oneline = 5
-
 
         // Add a simple line method to Raphael.
         function verLine(p, x, y, new_y) {
@@ -98,19 +88,6 @@
             }
         }
 
-        var chords = {
-            "C": {"positions": "x32010", "fingers": "-32-1-"},
-            "D": {"positions": "xx0232", "fingers": "---132"},
-            "D7": {"positions": "xx0212", "fingers": "---213"},
-            "A": {"positions": "x02220", "fingers": "--123-"},
-            "Gmaj7/d": {"positions": "320002", "fingers": "32---1"},
-            "Gsus2": {"positions": "300233", "fingers": "2--134"},
-            "A7sus4": {"positions": "002233", "fingers": "--1123"},
-            "Csus2": {"positions": "035533", "fingers": "-13411"},
-            "#Cm": {"positions": "x46654", "fingers": "-13421"},
-            "Em7": {"positions": "002433", "fingers": "--1423"},
-            "Em7(7)": {"positions": "x79787", "fingers": "-13121"}
-        }
 
         // 简谱旋律, m[0] 1234567, m[1] 音高 m[3] 时值 m[4] 装饰音,滑音
         var melodies = [
@@ -368,81 +345,17 @@
 
         }
 
-        function draw_chords(p, x, y, name) {
-            // Draw strings
-            var string_spacing = 10
-            var fret_spacing = 14
-            var fret_count = 5
-            var name_size = 15
-            for (var i = 0; i < 6; ++i) {
-                verLine(p, (x + string_spacing * i), y, (y + fret_spacing * fret_count - fret_spacing / 2))
-            }
 
-            // Draw frets
-            for (var i = 0; i < fret_count; ++i) {
-                horLine(p, x, y + fret_spacing * i, x + string_spacing * 5)
-            }
 
-            // Draw tuning keys
-//            var tuning = ["E", "A", "D", "G", "B", "E"];
-//            for (var i = 0; i < 6; ++i) {
-//                var t = p.text(x + string_spacing * i, y + fret_count * fret_spacing, tuning[i]);
-//            }
 
-            // Draw chord name
-            var t = p.text(x + string_spacing * 2.5, y - fret_spacing, name).attr("font-size", name_size)
-
-            if (!chords[name]) {
-                return
-            }
-            // Draw min_fret
-            var max = 0
-            for (var i = 0; i < 6; i++) {
-                var fret = Math.floor(chords[name]["positions"][i])
-                if (fret > max) {
-                    max = fret
-                }
-            }
-            var min = max
-            for (var i = 0; i < 6; i++) {
-                var fret = Math.floor(chords[name]["positions"][i])
-                if (fret != 0 && fret < min) {
-                    min = fret
-                }
-            }
-            var capo = 1
-            if (max < 5) {
-                capo = 1
-            } else if (max >= 5) {
-                capo = min
-            }
-            if (capo != 1) {
-                p.text(x - string_spacing * 0.5, y + fret_spacing * 0.5, capo)
-            }
-
-            // Draw finger
-            for (var i = 0; i < 6; i++) {
-                var position = chords[name]["positions"][i]
-                var finger = chords[name]["fingers"][i]
-                if (position == 'x') {
-                    p.text(x + string_spacing * i, y - fret_spacing / 4, "x")
-                }
-                else if (position == '0') {
-                    p.text(x + string_spacing * i, y - fret_spacing / 4, "o")
-                }
-                else {
-                    var fret = Math.floor(position)
-                    p.circle(x + string_spacing * i, y + fret_spacing * (fret - capo + 1) - fret_spacing / 2, fret_spacing / 3).attr("fill", "black")
-                    p.text(x + string_spacing * i, y + fret_spacing * (fret - capo + 1) - fret_spacing / 2, finger).attr("fill", "white")
-                }
-            }
-        }
 
         var tab_y_spacing = 10    // for six string in one line tab
         var tab_x_width = 900
         var tab_y_width = 360     // for two tab gap
         var tab_x0 = 100
         var tab_y0 = 200
+
+        var bars_num_oneline = 5
 
         var note_x_spacing = 20
         var note_font_size = 10
@@ -649,6 +562,10 @@
 
         ]
 
+
+
+
+
         function draw_fret_note(p, x, y, note) {
             var f = note[1] // 几品 fret
             if (f == '⟿') {
@@ -722,30 +639,8 @@
             var strings_num = 6
             var bar_width = 400
 
-            var bar_chords = [
-                [["Gsus2", 1]],
-                [["A7sus4", 1]],
-                [["Csus2", 1]],
-                [["D7", 1]],
-                [["Gsus2", 1]],
-                [["A7sus4", 1]],
-                [["Csus2", 1]],
-                [["Em7", 1]],
-                [["A7sus4", 1]],
-                [["D7", 1]],
-                [["Gmaj7/d", 1]],
-                [["Gmaj7/d", 1]],
-                [["Gsus2", 1]],
-                [["A7sus4", 1]],
-                [["Csus2", 1]],
-                [["Em7(7)", 1]],
-                [["A7sus4", 1]],
-                [["Csus2", 1]],
-                [["D7", 1]],
-                [["D7", 1]]
-            ]
-
             init_tab(paper)
+            paper.draw_chords()
 
 
             for (var i = 0; i < bars.length; i++) {
@@ -755,21 +650,8 @@
                 var note_x_start = bar_x_start + note_x_spacing
                 var note_y_start = bar_y_start
                 // 每个小节的音符
-                draw_bars(paper, bars[i], note_x_start, note_y_start, tab_y_spacing, note_x_spacing)
+//                draw_bars(paper, bars[i], note_x_start, note_y_start, tab_y_spacing, note_x_spacing)
 
-            }
-
-            // 和弦
-            for (var i = 0; i < bar_chords.length; i++) {
-                var bar_x_start = tab_x0 + Math.floor(tab_x_width / bars_num_oneline) * (i % bars_num_oneline)
-                var bar_y_start = tab_y0 + tab_y_width * Math.floor(i / bars_num_oneline)
-                var chord_y_start = bar_y_start - tab_y_width / 5
-                for (var j = 0; j < bar_chords[i].length; j++) {
-                    var chord_x_start = bar_x_start + bar_width * (bar_chords[i][j][1] - 1)
-
-                    // 每个小节的和弦
-                    draw_chords(paper, chord_x_start, chord_y_start, bar_chords[i][j][0])
-                }
             }
 
             // 旋律
