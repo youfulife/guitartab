@@ -16,14 +16,6 @@ var chords = {
     "Em7(7)": {"positions": "x79787", "fingers": "-13121"}
 }
 
-// Add a simple line method to Raphael.
-Raphael.prototype.verLine = function (x, y, new_y) {
-    return this.path("M" + x + " " + y + "V" + new_y);
-}
-
-Raphael.prototype.horLine = function (x, y, new_x) {
-    return this.path("M" + x + " " + y + "H" + new_x);
-}
 
 ChordBox = function (paper, x, y, width, height) {
     this.paper = paper;

@@ -7,31 +7,31 @@
     <script src="http://cdn.bootcss.com/raphael/1.5.2/raphael-min.js"></script>
     <script src="chord.js"></script>
     <script src="tab.js"></script>
+    <script src="melody.js"></script>
+    <script src="yinweiaiqing.js"></script>
     <script>
-
         // Add a simple line method to Raphael.
-        function verLine(p, x, y, new_y) {
-            return p.path("M" + x + " " + y + "V" + new_y);
-        }
-        function horLine(p, x, y, new_x) {
-            return p.path("M" + x + " " + y + "H" + new_x);
+        Raphael.prototype.verLine = function (x, y, new_y) {
+            return this.path("M" + x + " " + y + "V" + new_y);
         }
 
-        function arcLine(p, x, y, mid_x, mid_y, end_x, end_y) {
-            return p.path("M" + x + " " + y + "S" + " " + mid_x + " " + mid_y + " " + end_x + " " + end_y)
+        Raphael.prototype.horLine = function (x, y, new_x) {
+            return this.path("M" + x + " " + y + "H" + new_x);
         }
 
-        function draw_bars(paper, notes, note_x_start, note_y_start, tab_y_spacing, note_x_spacing) {
+        Raphael.prototype.arcLine = function (x, y, mid_x, mid_y, end_x, end_y) {
+            return this.path("M" + x + " " + y + "S" + " " + mid_x + " " + mid_y + " " + end_x + " " + end_y)
+        }
+
+        function draw_bars(paper, content, note_x_start, note_y_start, tab_y_spacing, note_x_spacing) {
 
             var strings_num = 6
-            for (var i = 0; i < notes.length; i++) {
-                var note = notes[i]
-                for (var j = 0; j < note.length; j++) {
-                    var s = note[j][0] // string
-                    var f = note[j][1] // fret
-                    var d = note[j][2] // duration
-                    var x = note_x_start + note_x_spacing * i
-                    var y = note_y_start + tab_y_spacing * (s - 1)
+
+            var s = content[0] // string
+            var f = content[1] // fret
+            var d = content[2] // duration
+            var x = note_x_start + note_x_spacing * d
+            var y = note_y_start + tab_y_spacing * (s - 1)
 //
 //                    // 延音/滑音/点弦/勾弦 线条有待改进
 //                    // 最后一个音需要横跨小节线, 是小节内长度的2倍
@@ -48,305 +48,49 @@
 //                        continue
 //                    }
 
-                    draw_grace_note(paper, x, y, note[j])
+            draw_grace_note(paper, x, y, content)
 
-                    draw_fret_note(paper, x, y, note[j])
+            draw_fret_note(paper, x, y, f)
 
-                    // Draw Duration line
-                    total_duration += d / note.length
-                    var duration_x_start = note_x_start + note_x_spacing * i
-                    var duration_y_start = note_y_start + tab_y_spacing * s
-                    var duration_y_end = note_y_start + tab_y_spacing * (strings_num + 1)
-                    var duration_x_end = note_x_start + note_x_spacing * (i + 0.5 - i % 2)
-                    switch (d) {
-                        case 0:
-                            //休止符
-                            break
-                        case 0.125:
-                            // 八分音符
-                            verLine(paper, duration_x_start, duration_y_start, duration_y_end)
-                            horLine(paper, duration_x_start, duration_y_end, duration_x_end).attr("stroke-width", 2)
-                            break
-                        case 0.25:
-                            // 四分音符
-                            verLine(paper, duration_x_start, duration_y_start, duration_y_end)
-                            break
-                        case 0.5:
-                            // 二分音符
-                            verLine(paper, duration_x_start, duration_y_start, duration_y_end)
-                            var gap = Math.floor(tab_x_width / bars_num_oneline / 5)
-                            paper.text(x + gap, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
-                        case 1:
-                            // 全音符
-                            verLine(paper, duration_x_start, duration_y_start, duration_y_end)
-                            var gap = Math.floor(tab_x_width / bars_num_oneline / 5)
-                            paper.text(x + gap, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
-                            paper.text(x + gap * 2, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
-                            paper.text(x + gap * 3, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
-                            break
-                    }
-                }
-            }
+            // Draw Duration line
+            total_f_duration += d
+//                    var duration_x_start = note_x_start + note_x_spacing
+//                    var duration_y_start = note_y_start + tab_y_spacing * s
+//                    var duration_y_end = note_y_start + tab_y_spacing * (strings_num + 1)
+//                    var duration_x_end = note_x_start + note_x_spacing * (i + 0.5 - i % 2)
+//                    switch (d) {
+//                        case 0:
+//                            //休止符
+//                            break
+//                        case 0.125:
+//                            // 八分音符
+//                            paper.verLine(duration_x_start, duration_y_start, duration_y_end)
+//                            paper.horLine(duration_x_start, duration_y_end, duration_x_end).attr("stroke-width", 2)
+//                            break
+//                        case 0.25:
+//                            // 四分音符
+//                            paper.verLine(duration_x_start, duration_y_start, duration_y_end)
+//                            break
+//                        case 0.5:
+//                            // 二分音符
+//                            paper.verLine(duration_x_start, duration_y_start, duration_y_end)
+//                            var gap = Math.floor(tab_x_width / bars_num_oneline / 5)
+//                            paper.text(x + gap, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
+//                        case 1:
+//                            // 全音符
+//                            paper.verLine(duration_x_start, duration_y_start, duration_y_end)
+//                            var gap = Math.floor(tab_x_width / bars_num_oneline / 5)
+//                            paper.text(x + gap, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
+//                            paper.text(x + gap * 2, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
+//                            paper.text(x + gap * 3, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
+//                            break
+//                    }
+
+
         }
 
 
-        // 简谱旋律, m[0] 1234567, m[1] 音高 m[3] 时值 m[4] 装饰音,滑音
-        var melodies = [
-            [
-                [0, 0, 0.25],
-                [0, 0, 0.25],
-                [0, 0, 0.25],
-                [0, 0, 0.25],
-            ],
-            [
-                [0, 0, 0.25],
-                [0, 0, 0.25],
-                [0, 0, 0.25],
-                [0, 0, 0.25],
-            ],
-            [
-                [0, 0, 0.25],
-                [0, 0, 0.25],
-                [0, 0, 0.25],
-                [0, 0, 0.25],
-            ],
-            [
-                [0, 0, 0.25],
-                [0, 0, 0.25],
-                [0, 0, 0.25],
-                [0, 0, 0.25],
-            ],
-            [
-                [0, 0, 0.125],
-                [5, -8, 0.125],
-                [6, -8, 0.125],
-                [1, 0, 0.125],
-                [1, 0, 0.125],
-                [6, -8, 0.125],
-                [1, 0, 0.125],
-                [2, 0, 0.125],
-            ],
-            [
-                [3, 0, 0.125],
-                ["2 •", 0, 0.375],
-                [0, 0, 0.25],
-                [1, 0, 0.125],
-                [6, -8, 0.125],
-            ],
-            [
-                [3, 0, 0.125, "2"],
-                [2, 0, 0.125],
-                [6, -8, 0.125],
-                [3, 0, 0.125],
-                ["2 •", 0, 0.375],
-                [1, 0, 0.125, "s"],
-            ],
-            [
-                [1, 0, 0.125],
-                ["6 •", -8, 0.375],
-                [0, 0, 0.25],
-                [6, -8, 0.125],
-                [7, -8, 0.125],
-            ],
-            [
-                [1, 0, 0.125],
-                [1, 0, 0.125],
-                [6, -8, 0.125],
-                [3, 0, 0.25, '2'],
-                [2, 0, 0.125, 's'],
-                [2, 0, 0.25],
-            ],
-            [
-                ["3 •", 0, 0.1875, '2'],
-                [2, 0, 0.0625, 's'],
-                [2, 0, 0.125],
-                [2, 0, 0.125],
-                [2, 0, 0.25],
-                [3, 0, 0.25, '2'],
-            ],
-            [
-                [3, 0, 1],
-            ],
-            [
-                [0, 0, 0.25],
-                [0, 0, 0.25],
-                [0, 0, 0.25],
-                [0, 0, 0.25],
-            ],
-            [
-                [0, 0, 0.125],
-                [5, -8, 0.125],
-                [6, -8, 0.125],
-                [1, 0, 0.125],
-                [1, 0, 0.125],
-                [6, -8, 0.125],
-                [1, 0, 0.125],
-                [2, 0, 0.125],
-            ],
-            [
-                [3, 0, 0.125],
-                ["2 •", 0, 0.375],
-                [0, 0, 0.25],
-                [1, 0, 0.125],
-                [6, -8, 0.125],
-            ],
-            [
-                [3, 0, 0.125, "2"],
-                [2, 0, 0.125],
-                [6, -8, 0.125],
-                [3, 0, 0.125],
-                ["2 •", 0, 0.375],
-                [1, 0, 0.125, "s"],
-            ],
-            [
-                [1, 0, 0.125],
-                ["6 •", -8, 0.375],
-                [0, 0, 0.25],
-                [6, -8, 0.125],
-                [7, -8, 0.125],
-            ],
-            [
-                [1, 0, 0.125],
-                [1, 0, 0.125],
-                [6, -8, 0.125],
-                [3, 0, 0.25, '2'],
-                [2, 0, 0.125, 's'],
-                [2, 0, 0.25],
-            ],
-            [
-                [1, 0, 0.25],
-                [6, -8, 0.125],
-                [1, 0, 0.125],
-                [3, 0, 0.25, '2'],
-                [5, 0, 0.25, 's'],
-            ],
-            [
-                [5, 0, 0.125],
-                [2, 0, 0.125, 's'],
-                [2, 0, 0.75],
-            ],
-
-        ]
-
-        var lyrics = [
-            "给你一张过去的CD",
-            "听听那时我们的爱情",
-            "有时会突然忘了",
-            "我还在爱着你",
-            "再唱不出那样的歌曲",
-            "听到都会红着脸躲避",
-            "虽然会经常忘了",
-            "我依然爱着你",
-        ].join('')
-
-        function isString(str) {
-            return (typeof str == 'string') && str.constructor == String;
-        }
-
-        var lyric_offset = 0
-        var slur_flag = 0
-        function draw_melody(p, x, y, melody) {
-            var note_x_spacing = 20
-            var tab_y_spacing = 10
-            var font_size = 15
-            var gap = (tab_x_width / bars_num_oneline - note_x_spacing) / 32
-            x = x + note_x_spacing
-
-            for (var i = 0; i < melody.length; i++) {
-                var note = melody[i][0] // 音符
-                var pitch = melody[i][1] // 音高
-                var d = melody[i][2] // 时值
-                var grace = melody[i][3] //装饰音
-
-                var t = p.text(x, y, note).attr("font-weight", "bold").attr("font-size", font_size)
-                if (note != 0 && slur_flag == 0) {
-                    p.text(x, y + tab_y_spacing * 4, lyrics[lyric_offset]).attr("font-weight", "bold").attr("font-size", font_size)
-                    lyric_offset += 1
-                }
-                if (isString(note) && (grace || pitch < 0)) {
-                    t.attr("text-anchor", "start")
-                }
-                if (grace == 's') {
-                    slur_flag = 1
-                } else if (slur_flag == 1) {
-                    slur_flag = 0
-                }
-
-                switch (grace) {
-                    case undefined:
-                        break
-                    case 's':
-                        arcLine(p,
-                                x,
-                                y - tab_y_spacing * 2,
-                                //x + note_x_spacing * 0.5 * (1 + Math.floor(i / (melody.length - 1))),
-                                x + 1 / 2 * (gap * d / (1 / 32) + note_x_spacing * Math.floor(i / (melody.length - 1))),
-                                y - tab_y_spacing * 3,
-                                //x + note_x_spacing * (1 + Math.floor(i / (melody.length - 1))),
-                                x + gap * d / (1 / 32) + note_x_spacing * Math.floor(i / (melody.length - 1)),
-                                y - tab_y_spacing * 2
-                        ).attr("stroke-width", 1.2)
-                        break
-                    default:
-                        p.text(x - gap, y - tab_y_spacing * 1.5, grace)
-                        p.text(x - gap, y - tab_y_spacing * 0.8, "⍑").attr("font-size", font_size)
-                }
-
-
-                switch (pitch) {
-                    case 0:
-                        break
-                    case -8:
-                        t = p.text(x + 1, y + tab_y_spacing * 1.3, '•').attr("font-size", font_size)
-                        if (isString(note) && (grace || pitch < 0)) {
-                            t.attr("text-anchor", "start")
-                        }
-
-                }
-                switch (d) {
-                    case 0:
-                        //休止符
-                        break
-                    case 0.0625:
-                        // 十六分音符
-                        p.text(x, y, '_').attr("font-weight", "bold").attr("font-size", font_size)
-                        p.text(x, y + tab_y_spacing * 0.3, '_').attr("font-weight", "bold").attr("font-size", font_size)
-                        break
-                    case 0.125:
-                        // 八分音符
-                        t = p.text(x, y, '_').attr("font-weight", "bold").attr("font-size", font_size)
-                        if (isString(note) && (grace || pitch < 0)) {
-                            t.attr("text-anchor", "start")
-                        }
-                        break
-                    case 0.1875:
-                        // 附点八分音符
-                        t = p.text(x, y, '_').attr("font-weight", "bold").attr("font-size", font_size)
-                        if (isString(note) && (grace || pitch < 0)) {
-                            t.attr("text-anchor", "start")
-                        }
-                    case 0.25:
-                        // 四分音符
-                        break
-                    case 0.5:
-                        p.text(x + 1 / 2 * gap * d / (1 / 32), y, '—').attr("font-weight", "bold")
-                        break
-                    case 0.75:
-                        p.text(x + 1 / 3 * gap * d / (1 / 32), y, '—').attr("font-weight", "bold")
-                        p.text(x + 2 / 3 * gap * d / (1 / 32), y, '—').attr("font-weight", "bold")
-                        break
-                    case 1:
-                        p.text(x + 1 / 4 * gap * d / (1 / 32), y, '—').attr("font-weight", "bold")
-                        p.text(x + 2 / 4 * gap * d / (1 / 32), y, '—').attr("font-weight", "bold")
-                        p.text(x + 3 / 4 * gap * d / (1 / 32), y, '—').attr("font-weight", "bold")
-                        break
-                }
-                x = x + gap * d / (1 / 32)
-            }
-
-        }
-
-        var tab_y_spacing = 10    // for six string in one line tab
+        var tab_y_spacing = 12    // for six string in one line tab
         var tab_x_width = 900
         var tab_y_width = 360     // for two tab gap
         var tab_x0 = 100
@@ -355,218 +99,12 @@
         var bars_num_oneline = 5
 
         var note_x_spacing = 20
-        var note_font_size = 10
 
-        var total_duration = 0
 
-        var bars = [
-            // 0 表示延音或者滑音或者点弦或者勾弦
-                [6, 'X', 0.125],
-                [4, 'X', 0.125],
-                [3, 'X', 0.125],
-                [12, 'X/X', 0.125, 's'],
-                [12, 'X/X', 0.125],
-                [3, 'X', 0.125],
-                [2, 'X', 0.25, 's']
+        var total_f_duration = 0
 
-            [
-                [[5, 'X', 0.125]],
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125]],
-                [[3, '2', 0.125]],
-                [[3, '5', 0.25]]
-            ],
 
-            [
-                [[5, 'X', 0.125]],
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.25]]
-            ],
 
-            [
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.125]],
-                [[1, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.25]]
-            ],
-
-            [
-                [[6, 'X', 0.125]],
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.25]]
-            ],
-
-            [
-                [[5, 'X', 0.125]],
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125]],
-                [[3, '2', 0.125]],
-                [[3, '5', 0.25]]
-            ],
-
-            [
-                [[5, 'X', 0.125]],
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.25]]
-            ],
-
-            [
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.125]],
-                [[1, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.25]]
-            ],
-
-            [
-                [[5, 'X', 0.125]],
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125]],
-                [[3, '2', 0.125]],
-                [[3, '5', 0.25]]
-            ],
-
-            [
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.125]],
-                [[1, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.25]]
-            ],
-
-            [
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.125]],
-                [[1, '2', 0.125], [0, '', 0.125]],
-                [[1, '2', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.125]],
-                [[1, '0', 0.125], [0, '', 0.125]]
-            ],
-
-            [
-                [[1, '0', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.125]],
-                [[2, '3', 0.125], [0, '', 0.125]],
-                [[2, '3', 0.125]],
-                [[3, '2', 0.125], [0, 's', 0.125]],
-                [[3, '4', 0.125]],
-                [[2, '3', 0.125]]
-            ],
-
-            [
-                [[6, 'X', 0.125]],
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.25]]
-            ],
-
-            [
-                [[5, 'X', 0.125]],
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[1, 'X', 0.25], [2, 'X', 0.25]]
-            ],
-
-            [
-                [[5, 'X', 0.125]],
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.25]]
-            ],
-
-            [
-                [[5, 'X', 0.125]],
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125]],
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.25]]
-            ],
-
-            [
-                [[5, 'X', 0.125]],
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.125], [0, '', 0.125]],
-                [[2, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[1, 'X', 0.125]],
-                [[3, '5', 0.125]],
-            ],
-
-            [
-                [[5, 'X', 0.125]],
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125], [2, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.25]]
-            ],
-
-            [
-                [[4, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[2, 'X', 0.125]],
-                [[1, 'X', 0.125], [0, '', 0.125]],
-                [[1, 'X', 0.125]],
-                [[2, 'X', 0.125]],
-                [[3, 'X', 0.125]],
-                [[4, '⟿', 0.125], [0, '', 0.125]],    // 向下琶音
-            ],
-
-            [
-                [[4, '⟿', 1]],    // 琶音
-            ],
-
-        ]
-
-        function draw_fret_note(p, x, y, note) {
-            var f = note[1] // 几品 fret
-            if (f == '⟿') {
-                p.text(x, y, f).attr("font-size", note_font_size * 2).rotate(-90).attr("text-anchor", "start")
-            } else {
-                p.text(x, y, f).attr("font-size", note_font_size)
-            }
-        }
 
         function isInteger(obj) {
             return Math.floor(obj) === obj
@@ -584,14 +122,14 @@
                     var x0 = x
                     var x1 = x0 + 0.5 * gap * duration / (1 / 32)
                     var x2 = x0 + gap * duration / (1 / 32)
-                    if (isInteger(total_duration)) {
+                    if (isInteger(total_f_duration)) {
                         x1 += 0.5 * note_x_spacing
                         x2 += note_x_spacing
                     }
                     var y0 = y - tab_y_spacing * 0.5
                     var y1 = y0 - tab_y_spacing
                     var y2 = y0
-                    arcLine(p, x0, y0, x1, y1, x2, y2).attr("stroke-width", 1.2)
+                    p.arcLine(x0, y0, x1, y1, x2, y2).attr("stroke-width", 1.2)
                     p.text(x1, y1 - tab_y_spacing, 's').attr("font-size", note_font_size * 1.5)
                     break
                 default:
@@ -605,13 +143,7 @@
             x = x + note_x_spacing
         }
 
-        var note_chords = [
-            ["Gsus2", 1], ["A7sus4", 1], ["Csus2", 1], ["D7", 1],
-            ["Gsus2", 1], ["A7sus4", 1], ["Csus2", 1], ["Em7", 1],
-            ["A7sus4", 1], ["D7", 1], ["Gmaj7/d", 1], ["Gmaj7/d", 1],
-            ["Gsus2", 1], ["A7sus4", 1], ["Csus2", 1], ["Em7(7)", 1],
-            ["A7sus4", 1], ["Csus2", 1], ["D7", 1], ["D7", 1],
-        ]
+
 
         function demo() {
 
@@ -621,36 +153,20 @@
 
             paper.draw_tabs(5)
             paper.draw_chords(note_chords)
+            paper.draw_melodies(melodies)
 
 
-            for (var i = 0; i < bars.length; i++) {
-                // Draw bar line
-                var bar_x_start = tab_x0 + Math.floor(tab_x_width / bars_num_oneline) * (i % bars_num_oneline)
-                var bar_y_start = tab_y0 + tab_y_width * Math.floor(i / bars_num_oneline)
-                var note_x_start = bar_x_start + note_x_spacing
-                var note_y_start = bar_y_start
-                // 每个小节的音符
-//                draw_bars(paper, bars[i], note_x_start, note_y_start, tab_y_spacing, note_x_spacing)
-
-            }
-
-            // 旋律
-            for (var i = 0; i < melodies.length; i++) {
-
-                var bar_x_start = tab_x0 + Math.floor(tab_x_width / bars_num_oneline) * (i % bars_num_oneline)
-                var bar_y_start = tab_y0 + tab_y_width * Math.floor(i / bars_num_oneline) + tab_y_width * 0.25
-                var bar_x_end = bar_x_start + Math.floor(tab_x_width / bars_num_oneline)
-                var bar_y_end = bar_y_start + tab_y_spacing * 3
-                var melody_x_start = bar_x_start
-                var melody_y_start = bar_y_end - tab_y_spacing
-                // 每个小节的小节线
-                verLine(paper, bar_x_start, bar_y_start, bar_y_end)
-
-                draw_melody(paper, melody_x_start, melody_y_start, melodies[i])
-
-                verLine(paper, bar_x_end, bar_y_start, bar_y_end)
-
-            }
+//            var gap = (tab_x_width / bars_num_oneline - note_x_spacing) / 32
+//            var note_x_start = tab_x0 + note_x_spacing
+//            var note_y_start = tab_y0
+//
+////            for (var i = 0; i < fingering.length; i++) {
+////                // Draw bar line
+////
+////                // 每个小节的音符
+//////                draw_bars(paper, fingering[i], note_x_start, note_y_start, tab_y_spacing, note_x_spacing)
+////                note_x_start = note_x_start + gap * total_f_duration / (1 / 32)
+////            }
         }
         $(function () {
             demo()
