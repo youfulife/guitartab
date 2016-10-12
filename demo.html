@@ -6,6 +6,7 @@
     <!--<script src="underscore.js"></script>-->
     <script src="http://cdn.bootcss.com/raphael/1.5.2/raphael-min.js"></script>
     <script src="chord.js"></script>
+    <script src="tab.js"></script>
     <script>
 
         // Add a simple line method to Raphael.
@@ -345,10 +346,6 @@
 
         }
 
-
-
-
-
         var tab_y_spacing = 10    // for six string in one line tab
         var tab_x_width = 900
         var tab_y_width = 360     // for two tab gap
@@ -562,10 +559,6 @@
 
         ]
 
-
-
-
-
         function draw_fret_note(p, x, y, note) {
             var f = note[1] // 几品 fret
             if (f == '⟿') {
@@ -612,26 +605,13 @@
             x = x + note_x_spacing
         }
 
-        function draw_six_line(p, x, y) {
-            for (var i = 0; i < 6; i++) {
-                horLine(p, x, y + tab_y_spacing * i, x + tab_x_width)
-            }
-        }
-
-        function draw_bar_line(p, x, y) {
-            var bar_width = Math.floor(tab_x_width / bars_num_oneline)
-            for (var i = 0; i <= bars_num_oneline; i++) {
-                verLine(p, x + bar_width * i, y, y + tab_y_spacing * 5)
-            }
-        }
-
-        function init_tab(p) {
-            var groups = Math.floor(bars.length / bars_num_oneline)
-            for (var i = 0; i < groups; i++) {
-                draw_six_line(p, tab_x0, tab_y0 + tab_y_width * i)
-                draw_bar_line(p, tab_x0, tab_y0 + tab_y_width * i)
-            }
-        }
+        var note_chords = [
+            ["Gsus2", 1], ["A7sus4", 1], ["Csus2", 1], ["D7", 1],
+            ["Gsus2", 1], ["A7sus4", 1], ["Csus2", 1], ["Em7", 1],
+            ["A7sus4", 1], ["D7", 1], ["Gmaj7/d", 1], ["Gmaj7/d", 1],
+            ["Gsus2", 1], ["A7sus4", 1], ["Csus2", 1], ["Em7(7)", 1],
+            ["A7sus4", 1], ["Csus2", 1], ["D7", 1], ["D7", 1],
+        ]
 
         function demo() {
 
@@ -639,8 +619,8 @@
             var strings_num = 6
             var bar_width = 400
 
-            init_tab(paper)
-            paper.draw_chords()
+            paper.draw_tabs(5)
+            paper.draw_chords(note_chords)
 
 
             for (var i = 0; i < bars.length; i++) {

@@ -16,19 +16,7 @@ var chords = {
     "Em7(7)": {"positions": "x79787", "fingers": "-13121"}
 }
 
-var note_chords = [
-    ["Gsus2", 1], ["A7sus4", 1], ["Csus2", 1], ["D7", 1],
-    ["Gsus2", 1], ["A7sus4", 1], ["Csus2", 1], ["Em7", 1],
-    ["A7sus4", 1], ["D7", 1], ["Gmaj7/d", 1], ["Gmaj7/d", 1],
-    ["Gsus2", 1], ["A7sus4", 1], ["Csus2", 1], ["Em7(7)", 1],
-    ["A7sus4", 1], ["Csus2", 1], ["D7", 1], ["D7", 1],
-]
-
 // Add a simple line method to Raphael.
-Raphael.prototype.vexLine = function (x, y, new_x, new_y) {
-    return this.path("M" + x + " " + y + "L" + new_x + " " + new_y);
-}
-
 Raphael.prototype.verLine = function (x, y, new_y) {
     return this.path("M" + x + " " + y + "V" + new_y);
 }
@@ -128,16 +116,16 @@ ChordBox.prototype.draw = function () {
 }
 
 
-Raphael.prototype.draw_chords = function () {
+Raphael.prototype.draw_chords = function (chord_list) {
     var x = tab_x0
     var y = tab_y0 - tab_y_width / 5
     var total_chord_duration = 0
 
     // 和弦
-    for (var i = 0; i < note_chords.length; i++) {
+    for (var i = 0; i < chord_list.length; i++) {
         var chord = new ChordBox(this, x, y)
-        var c = note_chords[i][0]
-        var d = note_chords[i][1]
+        var c = chord_list[i][0]
+        var d = chord_list[i][1]
         chord.setChord(c, d)
         chord.draw()
 
