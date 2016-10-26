@@ -54,19 +54,43 @@ Tab.prototype.draw_fingering = function () {
     if (Math.floor(this.total_duration) == this.total_duration) {
         x += this.note_spacing
     }
-
+    var d = this.duration
     for(var i=0; i < ss.length; i++) {
         var s = parseInt(ss[i]) // string
         var f = this.fret.split('/')[i] // fret
-        var d = this.duration
         var y = this.y + this.string_spacing * (s - 1)
         this.draw_fret_note(x, y, f)
     }
+    //ss[0]是最小的那根弦
+    var grace_y = this.y + this.string_spacing * (parseInt(ss[0]) - 1)
+    this.draw_grace_note(x, grace_y, d)
     this.total_duration += d
     this.x = x + d * (this.width / this.num_bars - this.note_spacing)
-    if (this.total_duration % bars_num_oneline == 0) {
+    if (this.total_duration % this.num_bars == 0) {
         this.x = tab_x0
         this.y = y + this.tab_spacing
+    }
+}
+
+Tab.prototype.draw_grace_note = function(x, y, d) {
+    var grace = this.grace //装饰音
+    // 延音/滑音/点弦/勾弦 线条有待改进
+    var gap = this.width / this.num_bars - this.note_spacing
+    switch (grace) {
+        case undefined:
+            break
+        case '^':
+            this.paper.arcLine(
+                x,
+                y - this.string_spacing / 2,
+                x + 1 / 2 * d * gap,
+                y - this.string_spacing * 1.3,
+                x + d * gap,
+                y - this.string_spacing / 2
+            ).attr("stroke-width", 1.2)
+            break
+        default:
+            break
     }
 }
 

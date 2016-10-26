@@ -23,150 +23,22 @@
             return this.path("M" + x + " " + y + "S" + " " + mid_x + " " + mid_y + " " + end_x + " " + end_y)
         }
 
-        function draw_bars(paper, content, note_x_start, note_y_start, tab_y_spacing, note_x_spacing) {
-
-            var strings_num = 6
-
-            var s = content[0] // string
-            var f = content[1] // fret
-            var d = content[2] // duration
-            var x = note_x_start + note_x_spacing * d
-            var y = note_y_start + tab_y_spacing * (s - 1)
-//
-//                    // 延音/滑音/点弦/勾弦 线条有待改进
-//                    // 最后一个音需要横跨小节线, 是小节内长度的2倍
-//                    if (s == '0') {
-//                        arcLine(paper,
-//                                x,
-//                                y + tab_y_spacing * 0.5,
-//                                x + note_x_spacing * 0.5 * (1 + Math.floor(i / (notes.length - 1))),
-//                                y - tab_y_spacing * 0.5,
-//                                x + note_x_spacing * (1 + Math.floor(i / (notes.length - 1))),
-//                                y + tab_y_spacing * 0.5
-//                        ).attr("stroke-width", 1.2)
-//                        paper.text(x + note_x_spacing * 0.5, y - tab_y_spacing, f).attr("font-size", note_font_size * 1.5)
-//                        continue
-//                    }
-
-            draw_grace_note(paper, x, y, content)
-
-            draw_fret_note(paper, x, y, f)
-
-            // Draw Duration line
-            total_f_duration += d
-//                    var duration_x_start = note_x_start + note_x_spacing
-//                    var duration_y_start = note_y_start + tab_y_spacing * s
-//                    var duration_y_end = note_y_start + tab_y_spacing * (strings_num + 1)
-//                    var duration_x_end = note_x_start + note_x_spacing * (i + 0.5 - i % 2)
-//                    switch (d) {
-//                        case 0:
-//                            //休止符
-//                            break
-//                        case 0.125:
-//                            // 八分音符
-//                            paper.verLine(duration_x_start, duration_y_start, duration_y_end)
-//                            paper.horLine(duration_x_start, duration_y_end, duration_x_end).attr("stroke-width", 2)
-//                            break
-//                        case 0.25:
-//                            // 四分音符
-//                            paper.verLine(duration_x_start, duration_y_start, duration_y_end)
-//                            break
-//                        case 0.5:
-//                            // 二分音符
-//                            paper.verLine(duration_x_start, duration_y_start, duration_y_end)
-//                            var gap = Math.floor(tab_x_width / bars_num_oneline / 5)
-//                            paper.text(x + gap, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
-//                        case 1:
-//                            // 全音符
-//                            paper.verLine(duration_x_start, duration_y_start, duration_y_end)
-//                            var gap = Math.floor(tab_x_width / bars_num_oneline / 5)
-//                            paper.text(x + gap, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
-//                            paper.text(x + gap * 2, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
-//                            paper.text(x + gap * 3, note_y_start + tab_y_spacing * 2.5, '—').attr("font-weight", "bold")
-//                            break
-//                    }
-
-
-        }
-
-
+        // 这些全局变量需要去掉
         var tab_y_spacing = 12    // for six string in one line tab
         var tab_x_width = 900
         var tab_y_width = 360     // for two tab gap
         var tab_x0 = 100
         var tab_y0 = 200
-
         var bars_num_oneline = 5
-
-        var note_x_spacing = 20
-
-
-        var total_f_duration = 0
-
-
-
-
-        function isInteger(obj) {
-            return Math.floor(obj) === obj
-        }
-
-        function draw_grace_note(p, x, y, note) {
-            var grace = note[3] //装饰音
-            var duration = note[2] // 时值
-            // 延音/滑音/点弦/勾弦 线条有待改进
-            var gap = (tab_x_width / bars_num_oneline - note_x_spacing) / 32
-            switch (grace) {
-                case undefined:
-                    break
-                case 's':
-                    var x0 = x
-                    var x1 = x0 + 0.5 * gap * duration / (1 / 32)
-                    var x2 = x0 + gap * duration / (1 / 32)
-                    if (isInteger(total_f_duration)) {
-                        x1 += 0.5 * note_x_spacing
-                        x2 += note_x_spacing
-                    }
-                    var y0 = y - tab_y_spacing * 0.5
-                    var y1 = y0 - tab_y_spacing
-                    var y2 = y0
-                    p.arcLine(x0, y0, x1, y1, x2, y2).attr("stroke-width", 1.2)
-                    p.text(x1, y1 - tab_y_spacing, 's').attr("font-size", note_font_size * 1.5)
-                    break
-                default:
-                    break
-            }
-
-        }
-
-        function draw_bar_note(p, x, y, note) {
-            var gap = (tab_x_width / bars_num_oneline - note_x_spacing) / 32
-            x = x + note_x_spacing
-        }
-
-
 
         function demo() {
 
             var paper = Raphael(0, 0, 1200, 1500)
-            var strings_num = 6
-            var bar_width = 400
 
             paper.draw_tabs(5)
             paper.draw_chords(note_chords)
             paper.draw_melodies(melodies)
 
-
-//            var gap = (tab_x_width / bars_num_oneline - note_x_spacing) / 32
-//            var note_x_start = tab_x0 + note_x_spacing
-//            var note_y_start = tab_y0
-//
-////            for (var i = 0; i < fingering.length; i++) {
-////                // Draw bar line
-////
-////                // 每个小节的音符
-//////                draw_bars(paper, fingering[i], note_x_start, note_y_start, tab_y_spacing, note_x_spacing)
-////                note_x_start = note_x_start + gap * total_f_duration / (1 / 32)
-////            }
         }
         $(function () {
             demo()
