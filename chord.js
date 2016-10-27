@@ -110,7 +110,7 @@ ChordBox.prototype.draw = function () {
 
 Raphael.prototype.draw_chords = function (chord_list) {
     var x = tab_x0
-    var y = tab_y0 - tab_y_width / 5
+    var y = tab_y0 - tab_y_width / 4.5
     var total_chord_duration = 0
 
     // 和弦

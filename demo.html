@@ -10,43 +10,17 @@
     <script src="melody.js"></script>
     <script src="yinweiaiqing.js"></script>
     <script>
-        // Add a simple line method to Raphael.
-        Raphael.prototype.verLine = function (x, y, new_y) {
-            return this.path("M" + x + " " + y + "V" + new_y);
+        window.onload = function() {
+        var paper = new Raphael(document.getElementById('canvas_container'), 1200, 1600);
+        paper.draw_tabs(4);
+        paper.draw_chords(note_chords);
+        paper.draw_melodies(melodies);
         }
-
-        Raphael.prototype.horLine = function (x, y, new_x) {
-            return this.path("M" + x + " " + y + "H" + new_x);
-        }
-
-        Raphael.prototype.arcLine = function (x, y, mid_x, mid_y, end_x, end_y) {
-            return this.path("M" + x + " " + y + "S" + " " + mid_x + " " + mid_y + " " + end_x + " " + end_y)
-        }
-
-        // 这些全局变量需要去掉
-        var tab_y_spacing = 12    // for six string in one line tab
-        var tab_x_width = 900
-        var tab_y_width = 360     // for two tab gap
-        var tab_x0 = 100
-        var tab_y0 = 200
-        var bars_num_oneline = 5
-
-        function demo() {
-
-            var paper = Raphael(0, 0, 1200, 1500)
-
-            paper.draw_tabs(5)
-            paper.draw_chords(note_chords)
-            paper.draw_melodies(melodies)
-
-        }
-        $(function () {
-            demo()
-        });
     </script>
+
     <title></title>
 </head>
 <body>
-
+<div id="canvas_container"></div>
 </body>
 </html>

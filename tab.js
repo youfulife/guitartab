@@ -12,7 +12,7 @@ Tab = function (paper, x, y, width, height) {
     this.num_strings = 6;
     this.num_bars = 5
 
-    this.tab_spacing = 360
+    this.tab_spacing = 320
 
     // Content
     this.font_size = 10
@@ -42,7 +42,7 @@ Tab.prototype.draw_bar_line = function() {
 
 Tab.prototype.draw_fret_note = function(x, y, f) {
     if (f == '⟿') {
-        this.paper.text(x, y, f).attr("font-size", this.font_size * 2).rotate(-90).attr("text-anchor", "start")
+        this.paper.text(x, y, f).attr("font-size", this.font_size * 2).rotate(-90)
     } else {
         this.paper.text(x, y, f).attr("font-size", this.font_size)
     }
@@ -63,19 +63,22 @@ Tab.prototype.draw_fingering = function () {
     }
     //ss[0]是最小的那根弦
     var grace_y = this.y + this.string_spacing * (parseInt(ss[0]) - 1)
-    this.draw_grace_note(x, grace_y, d)
     this.total_duration += d
+    this.draw_grace_note(x, grace_y, d)
     this.x = x + d * (this.width / this.num_bars - this.note_spacing)
     if (this.total_duration % this.num_bars == 0) {
         this.x = tab_x0
-        this.y = y + this.tab_spacing
+        this.y += this.tab_spacing
     }
 }
 
 Tab.prototype.draw_grace_note = function(x, y, d) {
     var grace = this.grace //装饰音
     // 延音/滑音/点弦/勾弦 线条有待改进
-    var gap = this.width / this.num_bars - this.note_spacing
+    var gap = d * (this.width / this.num_bars - this.note_spacing)
+    if (Math.floor(this.total_duration) == this.total_duration) {
+        gap += this.note_spacing
+    }
     switch (grace) {
         case undefined:
             break
@@ -83,11 +86,22 @@ Tab.prototype.draw_grace_note = function(x, y, d) {
             this.paper.arcLine(
                 x,
                 y - this.string_spacing / 2,
-                x + 1 / 2 * d * gap,
+                x + 1 / 2 * gap,
                 y - this.string_spacing * 1.3,
-                x + d * gap,
+                x + gap,
                 y - this.string_spacing / 2
             ).attr("stroke-width", 1.2)
+            break
+        case 's':
+            this.paper.arcLine(
+                x,
+                y - this.string_spacing / 2,
+                x + 1 / 2 * gap,
+                y - this.string_spacing * 1.3,
+                x + gap,
+                y - this.string_spacing / 2
+            ).attr("stroke-width", 1.2)
+            this.paper.text(x + this.note_spacing * 0.5, y - this.string_spacing * 1.5, 's').attr("font-size", this.font_size * 1.3)
             break
         default:
             break
