@@ -243,15 +243,7 @@ var fingering = [
 
 ]
 
-Raphael.prototype.verLine = function (x, y, new_y) {
-    return this.path("M" + x + " " + y + "V" + new_y);
-}
-Raphael.prototype.horLine = function (x, y, new_x) {
-    return this.path("M" + x + " " + y + "H" + new_x);
-}
-Raphael.prototype.arcLine = function (x, y, mid_x, mid_y, end_x, end_y) {
-    return this.path("M" + x + " " + y + "S" + " " + mid_x + " " + mid_y + " " + end_x + " " + end_y)
-}
+
 // 这些全局变量需要去掉
 var tab_y_spacing = 12    // for six string in one line tab
 var tab_x_width = 900
